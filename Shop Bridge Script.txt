@@ -1,0 +1,82 @@
+
+create table product_master(
+product_code int identity(1,1),
+product_name varchar(200),
+product_description varchar(500),
+price decimal(15,2),
+product_category varchar(100),
+Qty int,
+status varchar(1),
+primary key(product_code)
+);
+
+go
+
+create procedure sp_addproduct(
+@pProductCode int,
+@pProductName varchar(200),
+@pProductDescription varchar(500),
+@pPrice decimal(15,2),
+@pProductCategory varchar(200),
+@pQty int,
+@res int out
+)
+as 
+begin
+set nocount on
+
+declare @vCnt as int;
+set @res = 0;
+
+set @vCnt = (select count(1) from product_master where product_code = @pProductCode);
+
+if(@vCnt > 0)
+begin
+update product_master set product_name=@pProductName, product_description=@pProductDescription,product_category=@pProductCategory,
+price=@pPrice, Qty=@pQty where product_code=@pProductCode;
+set @res=2; --product updated
+end
+else
+begin
+ insert into product_master(product_name,product_description,product_category,price,Qty,status) values(@pProductName, @pProductDescription,
+                            @pProductCategory,@pPrice, @pQty,'A');
+
+set @res=1; --product added
+end
+
+end;
+
+go
+
+
+create procedure sp_getproductlist
+as 
+begin
+set nocount on
+
+
+ select product_code, product_name,product_description,product_category,price,Qty 
+ from product_master where status='A';
+
+
+
+end;
+
+go
+
+create procedure sp_deleteproduct(
+@pProductCode int,
+@res int out
+)
+as 
+begin
+set nocount on
+
+set @res = 0;
+
+update product_master set status='I' where product_code=@pProductCode;
+set @res=1;
+
+
+end;
+
